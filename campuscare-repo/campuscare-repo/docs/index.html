@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CampusCare</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:#16214a; --muted:#5b6482; --paper:#eef1f7; --card:#fff; --line:#d9deea;
+    --accent:#f5b700; --on-accent:#16214a; --focus:#2f5bea; --hero:#16214a; --hero-text:#fff;
+    --t-Maintenance:#2f5bea; --t-Cleanliness:#1e9e6a; --t-Complaint:#d64545;
+    --t-Suggestion:#7a4bd6; --t-Lost:#e0a100; --t-Other:#6b7280;
+  }
+  [data-theme="dark"] {
+    --ink:#e8ecfa; --muted:#9aa3c7; --paper:#0d1329; --card:#171f42; --line:#2a3563;
+    --hero:#111a3a; --hero-text:#fff; --focus:#8fb0ff;
+    --t-Maintenance:#6f93ff; --t-Cleanliness:#3fc48c; --t-Complaint:#ff7a7a;
+    --t-Suggestion:#a887ff; --t-Lost:#f2c230; --t-Other:#9aa3b8;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); line-height:1.5;
+         font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Arial,sans-serif; }
+  :focus-visible { outline:3px solid var(--focus); outline-offset:2px; }
+  .wrap { max-width:1080px; margin:0 auto; padding:0 20px; }
+  svg.ic { width:1.1em; height:1.1em; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vertical-align:-.18em; }
+
+  /* ---------- top bar + hero ---------- */
+  .hero { background:var(--hero); color:var(--hero-text); }
+  .bar { display:flex; align-items:center; gap:12px; padding:16px 0; }
+  .brand { font-weight:800; font-size:1.25rem; letter-spacing:-.02em; margin-right:auto; }
+  .hero button.top { background:transparent; color:#fff; border:1px solid #ffffff55; padding:6px 12px; font-weight:500; }
+  .heroBody { display:grid; grid-template-columns:1.3fr 1fr; gap:28px; align-items:end; padding:28px 0 36px; }
+  @media (max-width:760px){ .heroBody { grid-template-columns:1fr; } }
+  h1 { margin:0; font-size:clamp(2rem,5vw,3.2rem); line-height:1.05; letter-spacing:-.03em; font-weight:800; max-width:16ch; }
+  .sub { margin:14px 0 0; color:#c5cbe3; max-width:52ch; }
+  .cta { margin-top:20px; background:var(--accent); color:var(--on-accent); border:0; padding:12px 20px; font-size:1rem; }
+  .cta:hover { filter:brightness(1.06); }
+  .pulse p { margin:0 0 8px; color:#c5cbe3; font-size:.9rem; }
+  .pulse b { color:#fff; }
+  .spark { display:flex; align-items:flex-end; gap:4px; height:64px; }
+  .spark i { flex:1; background:var(--accent); border-radius:2px 2px 0 0; min-height:3px; opacity:.9; }
+
+  /* ---------- tabs ---------- */
+  nav.tabs { display:flex; gap:4px; border-bottom:1px solid var(--line); margin:22px 0 18px; }
+  nav.tabs button { background:none; border:0; border-bottom:3px solid transparent; border-radius:0; padding:10px 14px; color:var(--muted); font-weight:500; }
+  nav.tabs button[aria-selected="true"] { color:var(--ink); border-color:var(--accent); font-weight:700; }
+
+  button { font:inherit; font-weight:700; cursor:pointer; border-radius:8px; }
+  .primary { width:100%; margin-top:16px; background:var(--ink); color:var(--paper); border:0; padding:11px; }
+  .primary:disabled { opacity:.6; cursor:wait; }
+  .ghost { background:var(--card); color:var(--ink); border:1px solid var(--line); padding:7px 12px; font-weight:500; }
+
+  /* ---------- filters + cards ---------- */
+  .filters { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  input, select, textarea { font:inherit; color:inherit; background:var(--card); border:1px solid var(--line); border-radius:8px; padding:9px 10px; width:100%; margin-top:4px; }
+  .filters input, .filters select { width:auto; margin:0; }
+  .filters input { flex:1 1 220px; }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; margin:12px 0; }
+  .chip { border:1px solid var(--line); background:var(--card); color:var(--ink); font-weight:500; padding:4px 12px; border-radius:999px; font-size:.85rem; }
+  .chip[aria-pressed="true"] { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .count { color:var(--muted); font-size:.875rem; margin:0 0 10px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); gap:14px; }
+  .report { text-align:left; display:block; width:100%; font-weight:400; color:inherit; background:var(--card); border:1px solid var(--line);
+            border-top:6px solid var(--c); border-radius:10px; overflow:hidden; padding:0; }
+  .report:hover { border-color:var(--c); }
+  .report img { width:100%; height:150px; object-fit:cover; display:block; background:var(--paper); }
+  .rb { padding:12px 14px 14px; }
+  .meta { display:flex; gap:8px; flex-wrap:wrap; align-items:center; font-size:.8rem; color:var(--muted); }
+  .rid { font-weight:800; color:var(--ink); }
+  .badge { font-weight:700; color:var(--c); }
+  .pill { border:1px solid var(--line); border-radius:999px; padding:0 8px; }
+  .report h3 { margin:6px 0 2px; font-size:1.05rem; }
+  .where { margin:0; font-size:.9rem; color:var(--muted); }
+  .clip { margin:8px 0 0; font-size:.9rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere; }
+  .empty { border:1px dashed var(--line); border-radius:10px; padding:28px; text-align:center; color:var(--muted); grid-column:1/-1; }
+  .skel { height:170px; border-radius:10px; background:linear-gradient(90deg,var(--card) 25%,var(--line) 50%,var(--card) 75%); background-size:200% 100%; }
+  @media (prefers-reduced-motion:no-preference){ .skel { animation:sh 1.2s linear infinite; } @keyframes sh { to { background-position:-200% 0; } } }
+
+  /* ---------- analytics ---------- */
+  .panels { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:14px; }
+  .panel { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  .panel h2 { margin:0 0 12px; font-size:1rem; }
+  .row { display:grid; grid-template-columns:120px 1fr 28px; gap:8px; align-items:center; font-size:.875rem; margin:7px 0; }
+  .row span:first-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .track { background:var(--paper); border-radius:4px; height:12px; overflow:hidden; }
+  .fill { height:100%; background:var(--c); border-radius:4px; }
+  .weeks { display:flex; align-items:flex-end; gap:8px; height:150px; }
+  .wk { flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%; font-size:.75rem; color:var(--muted); }
+  .wk i { width:100%; background:var(--focus); border-radius:4px 4px 0 0; min-height:2px; }
+  .facts { display:flex; gap:22px; flex-wrap:wrap; margin:0 0 14px; }
+  .facts div b { display:block; font-size:1.6rem; line-height:1.1; }
+  .facts div { color:var(--muted); font-size:.85rem; }
+
+  /* ---------- dialogs ---------- */
+  dialog { border:1px solid var(--line); border-radius:14px; background:var(--card); color:var(--ink); padding:22px; width:min(520px,94vw); max-height:92vh; }
+  dialog::backdrop { background:rgba(8,12,32,.7); }
+  dialog h2 { margin:0 0 12px; }
+  label { display:block; font-size:.875rem; font-weight:500; margin-top:12px; }
+  textarea { min-height:80px; resize:vertical; }
+  .drop { display:block; margin-top:4px; border:2px dashed var(--line); border-radius:10px; padding:16px; text-align:center; color:var(--muted); cursor:pointer; }
+  .drop.over { border-color:var(--focus); background:var(--paper); }
+  .drop input { display:none; }
+  .drop:focus-within { outline:3px solid var(--focus); outline-offset:2px; }
+  .drop img { max-width:100%; max-height:150px; border-radius:6px; display:block; margin:8px auto 0; }
+  .xbtn { float:right; }
+  #detailBody h2 { clear:both; }
+  .big { width:100%; max-height:300px; object-fit:contain; border-radius:8px; background:var(--paper); margin:10px 0; cursor:zoom-in; }
+  .tl { list-style:none; padding:0; margin:12px 0 0; border-left:2px solid var(--line); }
+  .tl li { margin:0 0 10px 12px; font-size:.875rem; }
+  .tl small { color:var(--muted); display:block; }
+  .verified { font-size:.8rem; font-weight:700; }
+  #zoom img { max-width:92vw; max-height:88vh; display:block; border-radius:8px; }
+  #zoom { padding:0; background:transparent; border:0; width:auto; }
+  #toast { position:fixed; left:50%; bottom:20px; transform:translateX(-50%); max-width:92vw; background:var(--ink); color:var(--paper); padding:12px 18px; border-radius:8px; display:none; z-index:50; }
+  #toast.err { background:#a02626; color:#fff; }
+  #toast.show { display:block; }
+
+  /* ---------- landing page + login ---------- */
+  [hidden] { display:none !important; }
+  .steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; padding:32px 0 8px; }
+  .step { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  .step b { display:block; margin-bottom:4px; }
+  .step span { color:var(--muted); font-size:.9rem; }
+  .typeList { display:flex; flex-wrap:wrap; gap:8px; padding:16px 0 48px; }
+  .typeList span { background:var(--card); border:1px solid var(--line); border-left:5px solid var(--c); border-radius:6px; padding:6px 12px; font-size:.9rem; }
+  .seg { display:flex; gap:6px; margin-bottom:6px; }
+  .seg button { flex:1; background:var(--card); color:var(--ink); border:1px solid var(--line); padding:8px; font-weight:500; }
+  .seg button[aria-pressed="true"] { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .linkBtn { background:none; border:0; color:var(--focus); font-weight:500; padding:10px 0 0; text-decoration:underline; }
+  .authErr { color:#d64545; font-size:.875rem; margin:10px 0 0; min-height:1.3em; }
+  [data-theme="dark"] .authErr { color:#ff7a7a; }
+  .roleLbl { color:#c5cbe3; font-size:.9rem; }
+  .demoBar { background:var(--accent); color:var(--on-accent); padding:8px 16px; font-size:.875rem; text-align:center; }
+</style>
+</head>
+<body>
+
+<div class="demoBar" id="demoBar" hidden>Demo mode: no backend is connected, so nothing is saved. Admin login: <b>admin</b> / <b>admin1234</b>. Students can use any ID and an 8+ character password.</div>
+
+<!-- ---------- homepage ---------- -->
+<section id="home">
+  <header class="hero">
+    <div class="wrap">
+      <div class="bar">
+        <span class="brand">CampusCare</span>
+        <button class="top" id="homeTheme" type="button" aria-label="Switch between light and dark theme">Light / Dark</button>
+        <button class="top" id="homeLogin" type="button">Log in</button>
+      </div>
+      <div class="heroBody">
+        <div>
+          <h1>See something on campus? Say something.</h1>
+          <p class="sub">CampusCare is one place to report broken equipment, cleanliness problems, complaints, ideas, and lost or found items. The right staff member is emailed straight away.</p>
+          <button class="cta" id="homeStart" type="button">Log in</button>
+          <button class="top" id="homeSignup" type="button" style="margin:20px 0 0 8px;padding:12px 18px;font-size:1rem">Create student account</button>
+        </div>
+      </div>
+    </div>
+  </header>
+  <div class="wrap">
+    <div class="steps">
+      <div class="step"><b>1. Log in</b><span>Students use their enrollment number. Staff use the admin account.</span></div>
+      <div class="step"><b>2. Send a report</b><span>Pick a type, describe the problem, and add a photo if it helps.</span></div>
+      <div class="step"><b>3. Staff are notified</b><span>An email goes out right away, and admins track each report until it is resolved.</span></div>
+    </div>
+    <div class="typeList" id="typeList" aria-label="Report types"></div>
+  </div>
+</section>
+
+<div id="app" hidden>
+<!-- ---------- hero ---------- -->
+<header class="hero">
+  <div class="wrap">
+    <div class="bar">
+      <span class="brand">CampusCare</span>
+      <span class="roleLbl" id="roleLabel"></span>
+      <button class="top" id="logout" type="button">Log out</button>
+      <button class="top" id="theme" type="button" aria-label="Switch between light and dark theme">Theme</button>
+    </div>
+    <div class="heroBody">
+      <div>
+        <h1 id="heroTitle">See something on campus? Say something.</h1>
+        <p class="sub" id="heroSub">Broken projector, litter in the corridor, a lost wallet or a good idea. Send one report and the right staff member is emailed straight away.</p>
+        <button class="cta" id="openForm" type="button">Report an issue</button>
+      </div>
+      <div class="pulse" aria-live="polite">
+        <p id="pulseText">Loading reports...</p>
+        <div class="spark" id="spark" aria-hidden="true"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tabR" aria-selected="true" aria-controls="viewR">Reports</button>
+    <button role="tab" id="tabA" aria-selected="false" aria-controls="viewA">Analytics</button>
+  </nav>
+
+  <!-- ---------- reports view ---------- -->
+  <section id="viewR" role="tabpanel" aria-labelledby="tabR">
+    <div class="filters">
+      <input id="q" type="search" placeholder="Search title, location or description" aria-label="Search reports">
+      <select id="sort" aria-label="Sort reports"><option value="new">Newest first</option><option value="old">Oldest first</option></select>
+      <button class="ghost" id="refresh" type="button">Refresh</button>
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="Filter by type"></div>
+    <p class="count" id="count" aria-live="polite"></p>
+    <div class="grid" id="list"></div>
+  </section>
+
+  <!-- ---------- analytics view ---------- -->
+  <section id="viewA" role="tabpanel" aria-labelledby="tabA" hidden>
+    <div class="panels" id="panels"></div>
+  </section>
+</main>
+</div>
+
+<!-- ---------- new report dialog ---------- -->
+<dialog id="formDlg">
+  <button class="ghost xbtn" id="closeForm" type="button">Close</button>
+  <h2>New report</h2>
+  <form id="f">
+    <label>Type
+      <select id="type"><option>Maintenance</option><option>Cleanliness</option><option>Complaint</option><option>Suggestion</option><option>Lost &amp; Found</option><option>Other</option></select>
+    </label>
+    <label>Title <input id="title" maxlength="100" required></label>
+    <label>Location <input id="location" maxlength="100" placeholder="e.g. Lab 204" required></label>
+    <label>Description <textarea id="description" maxlength="1000" required></textarea></label>
+    <label>Your name <input id="reporterName" maxlength="60" required readonly></label>
+    <label>Your email <input id="reporterEmail" type="email" maxlength="100" required readonly></label>
+    <label>Photo (optional)
+      <span class="drop" id="drop"><input id="image" type="file" accept="image/jpeg,image/png,image/webp">
+        <span id="dropText">Drop a photo here or click to choose one</span></span>
+    </label>
+    <button class="primary" id="submitBtn" type="submit">Submit report</button>
+  </form>
+</dialog>
+
+<!-- ---------- login / sign-up dialog ---------- -->
+<dialog id="authDlg">
+  <button class="ghost xbtn" id="closeAuth" type="button">Close</button>
+  <h2 id="authTitle">Log in</h2>
+  <form id="authForm">
+    <div class="seg" id="roleSeg" role="group" aria-label="Log in as">
+      <button type="button" id="segStudent" aria-pressed="true">Student</button>
+      <button type="button" id="segAdmin" aria-pressed="false">Staff / admin</button>
+    </div>
+    <div id="signupOnly" hidden>
+      <label>Full name <input id="suName" maxlength="60"></label>
+      <label>Email <input id="suEmail" type="email" maxlength="100"></label>
+    </div>
+    <label><span id="idLabel">Enrollment number</span> <input id="authId" maxlength="40" required autocomplete="username"></label>
+    <label>Password <input id="authPw" type="password" minlength="8" maxlength="72" required autocomplete="current-password"></label>
+    <p class="authErr" id="authErr" role="alert"></p>
+    <button class="primary" id="authBtn" type="submit">Log in</button>
+    <button class="linkBtn" id="authToggle" type="button">New student? Create an account</button>
+  </form>
+</dialog>
+
+<!-- ---------- detail + zoom dialogs ---------- -->
+<dialog id="detail"><button class="ghost xbtn" id="closeDetail" type="button">Close</button><div id="detailBody"></div></dialog>
+<dialog id="zoom"><img id="zoomImg" alt="Report photo, enlarged"></dialog>
+<div id="toast" role="status"></div>
+
+<script>
+// ---------- config: paste your Lambda Function URL (no trailing slash) ----------
+const API = "PASTE_FUNCTION_URL_HERE".replace(/\/+$/, "");   // paste your Lambda Function URL; while this placeholder is here the page runs in demo mode
+
+// ---------- helpers ----------
+const $ = id => document.getElementById(id);
+const TYPES = ["Maintenance","Cleanliness","Complaint","Suggestion","Lost & Found","Other"];
+const P = { // icon paths (24x24 stroke icons)
+  Maintenance:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/>',
+  Cleanliness:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+  Complaint:'<path d="M12 4l9 16H3zM12 10v4M12 17v.01"/>',
+  Suggestion:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/>',
+  "Lost & Found":'<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
+  Other:'<circle cx="6" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="18" cy="12" r="1.5"/>'
+};
+const tkey = t => t === "Lost & Found" ? "Lost" : (TYPES.includes(t) ? t : "Other");
+const color = t => `var(--t-${tkey(t)})`;
+function icon(t) {
+  const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("class", "ic"); s.setAttribute("aria-hidden", "true");
+  s.innerHTML = P[TYPES.includes(t) ? t : "Other"];   // static strings only, never user input
+  return s;
+}
+function el(tag, cls, text) {                          // textContent keeps user input from injecting HTML
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined) n.textContent = text;
+  return n;
+}
+let all = [], activeType = "All";
+
+function toast(msg, err) {
+  const t = $("toast"); t.textContent = msg; t.className = "show" + (err ? " err" : "");
+  clearTimeout(toast.h); toast.h = setTimeout(() => (t.className = ""), 5000);
+}
+function pretty(ts) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}:\d{2})/.exec(ts || "");
+  if (!m) return ts || "";
+  return `${+m[3]} ${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m[2]-1]} ${m[1]}, ${m[4]}`;
+}
+function shrink(file) {                                // max 1280px JPEG, so uploads stay small
+  return new Promise((ok, bad) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, 1280 / Math.max(img.width, img.height));
+      const c = document.createElement("canvas"); c.width = Math.round(img.width*k); c.height = Math.round(img.height*k);
+      const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0,0,c.width,c.height); x.drawImage(img,0,0,c.width,c.height);
+      URL.revokeObjectURL(url); ok(c.toDataURL("image/jpeg", 0.8).split(",")[1]);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); bad(new Error("Could not read that image.")); };
+    img.src = url;
+  });
+}
+
+// ---------- theme ----------
+function setTheme(t) { document.documentElement.dataset.theme = t; try { localStorage.setItem("cc-theme", t); } catch (e) {} }
+(function () {
+  let t = null; try { t = localStorage.getItem("cc-theme"); } catch (e) {}
+  setTheme(t || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+})();
+["theme", "homeTheme"].forEach(id => $(id).addEventListener("click",
+  () => setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark")));
+
+// ---------- tabs ----------
+function tab(which) {
+  const r = which === "R";
+  $("tabR").setAttribute("aria-selected", r); $("tabA").setAttribute("aria-selected", !r);
+  $("viewR").hidden = !r; $("viewA").hidden = r;
+  if (!r) renderAnalytics();
+}
+$("tabR").addEventListener("click", () => tab("R"));
+$("tabA").addEventListener("click", () => tab("A"));
+
+// ---------- form dialog ----------
+$("openForm").addEventListener("click", () => $("formDlg").showModal());
+$("closeForm").addEventListener("click", () => $("formDlg").close());
+const drop = $("drop"), fileIn = $("image");
+function preview() {
+  drop.querySelector("img")?.remove();
+  const f = fileIn.files[0];
+  $("dropText").textContent = f ? f.name : "Drop a photo here or click to choose one";
+  if (f) { const i = el("img"); i.alt = "Selected photo preview"; i.src = URL.createObjectURL(f); drop.appendChild(i); }
+}
+fileIn.addEventListener("change", preview);
+["dragenter","dragover"].forEach(v => drop.addEventListener(v, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave","drop"].forEach(v => drop.addEventListener(v, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => { if (e.dataTransfer.files.length) { fileIn.files = e.dataTransfer.files; preview(); } });
+
+$("f").addEventListener("submit", async e => {
+  e.preventDefault();
+  const btn = $("submitBtn"); btn.disabled = true; btn.textContent = "Submitting...";
+  try {
+    const body = { type:$("type").value, title:$("title").value.trim(), location:$("location").value.trim(),
+      description:$("description").value.trim(), reporterName:$("reporterName").value.trim(), reporterEmail:$("reporterEmail").value.trim() };
+    const file = fileIn.files[0];
+    if (file) body.image = { contentType:"image/jpeg", data:await shrink(file) };
+    const r = await call("/reports", { method:"POST", body:JSON.stringify(body) });
+    const out = await r.json();
+    if (!r.ok) throw new Error(out.error || "The server rejected the report.");
+    toast("Report " + out.reportId + " submitted. Staff have been emailed.");
+    $("f").reset(); fillReporter(); preview(); $("formDlg").close(); loadReports();
+  } catch (err) {
+    toast("Could not submit: " + err.message + " Check your connection and try again.", true);
+  } finally { btn.disabled = false; btn.textContent = "Submit report"; }
+});
+
+// ---------- hero pulse: last 14 days ----------
+function renderPulse() {
+  const days = Array(14).fill(0), now = new Date(); now.setHours(23,59,59,999);
+  all.forEach(r => { const d = Math.floor((now - new Date(r.timestamp)) / 864e5); if (d >= 0 && d < 14) days[13 - d]++; });
+  const max = Math.max(1, ...days), sp = $("spark"); sp.textContent = "";
+  days.forEach(n => { const b = el("i"); b.style.height = (n / max * 100) + "%"; sp.appendChild(b); });
+  const week = days.slice(7).reduce((a, b) => a + b, 0);
+  const open = all.some(r => r.status) ? all.filter(r => r.status && r.status !== "Resolved").length : null;
+  $("pulseText").textContent = all.length
+    ? `${all.length} reports so far, ${week} in the last 7 days` + (open !== null ? `, ${open} still open.` : ".") + " Daily reports, last 14 days:"
+    : "No reports yet. Yours could be the first.";
+}
+
+// ---------- reports view ----------
+function buildChips() {
+  const box = $("chips"); box.textContent = "";
+  ["All", ...TYPES].forEach(t => {
+    const b = el("button", "chip"); b.type = "button"; b.setAttribute("aria-pressed", String(t === activeType));
+    if (t !== "All") { b.appendChild(icon(t)); b.append(" "); }
+    b.append(t); b.addEventListener("click", () => { activeType = t; buildChips(); render(); }); box.appendChild(b);
+  });
+}
+function render() {
+  const q = $("q").value.trim().toLowerCase(), dir = $("sort").value === "new" ? -1 : 1;
+  const rows = all.filter(r => (activeType === "All" || r.type === activeType) &&
+    (!q || [r.title, r.location, r.description, r.reportId].join(" ").toLowerCase().includes(q)))
+    .sort((a, b) => (a.reportId < b.reportId ? -1 : 1) * dir);
+  const list = $("list"); list.textContent = "";
+  $("count").textContent = all.length ? `Showing ${rows.length} of ${all.length} reports` : "";
+  if (!rows.length) { list.appendChild(el("div", "empty", all.length
+    ? "No reports match these filters. Clear the search or pick another type." : "No reports yet. Press Report an issue to add the first one.")); return; }
+  rows.forEach(r => {
+    const card = el("button", "report"); card.type = "button"; card.style.setProperty("--c", color(r.type));
+    card.setAttribute("aria-label", `Open ${r.reportId}: ${r.title}`);
+    if (r.imageUrl) { const im = el("img"); im.src = r.imageUrl; im.alt = ""; im.loading = "lazy"; card.appendChild(im); }
+    const body = el("div", "rb"), meta = el("div", "meta"), badge = el("span", "badge");
+    badge.append(icon(r.type), " " + r.type);
+    meta.append(el("span", "rid", r.reportId), badge);
+    if (r.status) meta.append(el("span", "pill", r.status));
+    meta.append(el("span", "", pretty(r.timestamp)));
+    body.append(meta, el("h3", "", r.title), el("p", "where", r.location), el("p", "clip", r.description));
+    card.appendChild(body); card.addEventListener("click", () => openDetail(r)); list.appendChild(card);
+  });
+}
+function skeletons() { const l = $("list"); l.textContent = ""; for (let i = 0; i < 3; i++) l.appendChild(el("div", "skel")); }
+
+// ---------- detail view ----------
+function openDetail(r) {
+  const b = $("detailBody"); b.textContent = "";
+  const meta = el("div", "meta"), badge = el("span", "badge"); badge.style.setProperty("--c", color(r.type));
+  badge.append(icon(r.type), " " + r.type);
+  meta.append(el("span", "rid", r.reportId), badge);
+  if (r.status) meta.append(el("span", "pill", r.status));
+  if (typeof r.integrityOk === "boolean") meta.append(el("span", "verified", r.integrityOk ? "Verified, unchanged" : "Warning: data was altered"));
+  b.append(meta, el("h2", "", r.title), el("p", "where", r.location + " · " + pretty(r.timestamp)));
+  if (r.imageUrl) { const im = el("img", "big"); im.src = r.imageUrl; im.alt = "Photo for " + r.reportId;
+    im.addEventListener("click", () => { $("zoomImg").src = r.imageUrl; $("zoom").showModal(); }); b.appendChild(im); }
+  const d = el("p", "", r.description); d.style.whiteSpace = "pre-wrap"; d.style.overflowWrap = "anywhere";
+  b.append(d, el("p", "where", "Reported by " + r.reporterName));
+  if (session && session.role === "admin") {          // only admins get the status control (the server checks too)
+    const sel = el("select");
+    STATUSES.forEach(s => { const o = el("option", "", s); if ((r.status || "Open") === s) o.selected = true; sel.appendChild(o); });
+    const lab = el("label", "", "Status"); lab.appendChild(sel);
+    const save = el("button", "primary", "Update status"); save.type = "button";
+    save.addEventListener("click", async () => {
+      save.disabled = true;
+      try {
+        const res = await call("/status", { method:"POST", body:JSON.stringify({ reportId:r.reportId, status:sel.value }) });
+        const out = await res.json(); if (!res.ok) throw new Error(out.error || "Could not update.");
+        toast(r.reportId + " is now " + sel.value + "."); $("detail").close(); loadReports();
+      } catch (x) { toast("Could not update: " + x.message, true); save.disabled = false; }
+    });
+    b.append(lab, save);
+  }
+  if (Array.isArray(r.audit) && r.audit.length) {
+    const tl = el("ul", "tl");
+    r.audit.forEach(a => { const li = el("li", "", a.action); li.appendChild(el("small", "", `${pretty(a.at)} by ${a.by}`)); tl.appendChild(li); });
+    b.append(el("h3", "", "History"), tl);
+  }
+  $("detail").showModal();
+}
+$("closeDetail").addEventListener("click", () => $("detail").close());
+$("zoom").addEventListener("click", () => $("zoom").close());
+
+// ---------- analytics ----------
+function bars(title, entries, colorFn) {
+  const p = el("div", "panel"); p.appendChild(el("h2", "", title));
+  const max = Math.max(1, ...entries.map(e => e[1]));
+  if (!entries.length) p.appendChild(el("p", "where", "Nothing to show yet."));
+  entries.forEach(([label, n]) => {
+    const row = el("div", "row"), track = el("div", "track"), fill = el("div", "fill");
+    fill.style.width = (n / max * 100) + "%"; fill.style.setProperty("--c", colorFn(label)); track.appendChild(fill);
+    row.append(el("span", "", label), track, el("span", "", String(n))); p.appendChild(row);
+  });
+  return p;
+}
+function renderAnalytics() {
+  const box = $("panels"); box.textContent = "";
+  if (!all.length) { box.appendChild(el("div", "empty", "No data yet. Submit a report and the charts will appear.")); return; }
+  const byType = TYPES.map(t => [t, all.filter(r => r.type === t).length]).filter(e => e[1]).sort((a, b) => b[1] - a[1]);
+  const locs = {}; all.forEach(r => { const k = r.location.trim().toLowerCase(); (locs[k] = locs[k] || [r.location.trim(), 0])[1]++; });
+  const topLocs = Object.values(locs).sort((a, b) => b[1] - a[1]).slice(0, 6);
+
+  const sum = el("div", "panel"), facts = el("div", "facts");
+  const f = (n, l) => { const d = el("div"); d.append(el("b", "", String(n)), l); facts.appendChild(d); };
+  f(all.length, "total reports"); f(byType[0][0], "most reported type"); f(topLocs[0][0], "busiest location");
+  sum.append(el("h2", "", "Overview"), facts); box.appendChild(sum);
+
+  // ---------- insights: simple rules, each one explained in plain words ----------
+  const ins = el("div", "panel"), notes = [];
+  ins.appendChild(el("h2", "", "What needs attention"));
+  const wkOf = r => Math.floor((new Date() - new Date(r.timestamp)) / 6048e5);
+  const thisW = all.filter(r => wkOf(r) === 0).length, lastW = all.filter(r => wkOf(r) === 1).length;
+  topLocs.filter(l => l[1] >= 3).forEach(l => notes.push(`${l[0]} has ${l[1]} reports. Repeats from one place often point to one root cause, so check it in person.`));
+  if (thisW >= 3 && thisW > lastW * 1.5) notes.push(`${thisW} reports this week versus ${lastW} last week. Something may have changed.`);
+  if (all.some(r => r.status)) { const openN = all.filter(r => r.status && r.status !== "Resolved").length; if (openN) notes.push(`${openN} reports are not resolved yet.`); }
+  if (all.length >= 5) notes.push(`${byType[0][0]} makes up ${Math.round(byType[0][1] / all.length * 100)}% of reports. Plan staff time around it.`);
+  if (!notes.length) notes.push("No patterns yet. Insights appear as more reports come in.");
+  notes.forEach(n => ins.appendChild(el("p", "where", n)));
+  box.appendChild(ins);
+
+  box.appendChild(bars("Reports by type", byType, color));
+  box.appendChild(bars("Top locations", topLocs, () => "var(--focus)"));
+
+  const wk = el("div", "panel"), chart = el("div", "weeks"), now = new Date(), counts = Array(8).fill(0);
+  all.forEach(r => { const w = Math.floor((now - new Date(r.timestamp)) / 6048e5); if (w >= 0 && w < 8) counts[7 - w]++; });
+  const max = Math.max(1, ...counts);
+  counts.forEach((n, i) => { const c = el("div", "wk"), b = el("i"); b.style.height = (n / max * 100) + "%";
+    c.append(el("span", "", String(n)), b, el("span", "", i === 7 ? "now" : `-${7 - i}w`)); chart.appendChild(c); });
+  wk.append(el("h2", "", "Reports per week, last 8 weeks"), chart); box.appendChild(wk);
+}
+
+// ---------- load ----------
+async function loadReports() {
+  skeletons();
+  try {
+    const r = await call("/reports"); if (!r.ok) throw new Error("status " + r.status);
+    all = await r.json(); render(); renderPulse();
+    if (!$("viewA").hidden) renderAnalytics();
+  } catch (err) {
+    $("list").textContent = ""; $("pulseText").textContent = "Could not load reports.";
+    $("list").appendChild(el("div", "empty", "Could not load reports. Check the Function URL and its CORS settings, then press Refresh."));
+  }
+}
+$("q").addEventListener("input", render); $("sort").addEventListener("change", render);
+$("refresh").addEventListener("click", loadReports);
+
+// ---------- session + login ----------
+const STATUSES = ["Open", "In Progress", "Resolved"];
+let session = null;                 // { token, role, name, email, id }
+let authMode = "login", authRole = "student";
+
+function saveSession(s) { session = s; try { sessionStorage.setItem("cc-session", JSON.stringify(s)); } catch (e) {} }
+function loadSession() {            // reads the saved login, ignores it if the token has expired
+  try {
+    const s = JSON.parse(sessionStorage.getItem("cc-session") || "null");
+    const exp = JSON.parse(atob(s.token.split(".")[0].replace(/-/g, "+").replace(/_/g, "/"))).exp;
+    return exp * 1000 > Date.now() ? s : null;
+  } catch (e) { return null; }
+}
+// ---------- demo mode: only active while API still holds the placeholder, so the page can be previewed without AWS ----------
+const DEMO = API.includes("PASTE_");
+const pad = n => String(n).padStart(2, "0");
+const stamp = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+const ago = (days, hour) => { const d = new Date(Date.now() - days * 864e5); d.setHours(hour, 15, 0, 0); return stamp(d); };
+const demoReports = DEMO ? [
+  ["Maintenance", "Projector not working", "Lab 204", "Projector turns on but does not display anything.", "Open", 1],
+  ["Maintenance", "Ceiling fan wobbles", "Lab 204", "Fan shakes and makes a loud noise.", "In Progress", 3],
+  ["Cleanliness", "Garbage left on bench", "Block B Corridor", "Food wrappers and bottles left on the bench.", "Resolved", 4],
+  ["Suggestion", "Add more charging points", "Library", "More charging points near the reading area.", "Open", 6],
+  ["Lost & Found", "Found black wallet", "Cafeteria", "Black wallet found near the entrance.", "Resolved", 9],
+  ["Maintenance", "Projector flickers", "Lab 204", "Image flickers after ten minutes.", "Open", 0],
+  ["Complaint", "Water leakage", "Block B Corridor", "Water drips from the ceiling near the stairs.", "Open", 12],
+  ["Cleanliness", "Overflowing dustbin", "Cafeteria", "Bin has not been emptied for two days.", "Open", 2]
+].map((r, i) => ({ reportId: "CC-" + String(i + 1).padStart(3, "0"), type: r[0], title: r[1], location: r[2], description: r[3],
+  status: r[4], timestamp: ago(r[5], 9 + i), reporterId: "demo", reporterName: "Demo Student", reporterEmail: "demo@example.com", image: "",
+  audit: [{ at: ago(r[5], 9 + i), action: "Created", by: "Demo Student" }] })) : [];
+
+function demoCall(path, opts) {
+  const body = opts.body ? JSON.parse(opts.body) : {};
+  const reply = (status, data) => ({ ok: status < 400, status, json: async () => data });
+  const token = () => btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 28800 })) + ".demo";
+  if (path === "/register") return reply(200, { ok: true });
+  if (path === "/login") {
+    if (body.role === "admin") return body.id === "admin" && body.password === "admin1234"
+      ? reply(200, { token: token(), role: "admin", name: "Admin", email: "", id: "admin" })
+      : reply(401, { error: "Wrong ID or password." });
+    return reply(200, { token: token(), role: "student", name: body.id, email: body.id + "@example.com", id: body.id });
+  }
+  if (path === "/reports" && opts.method === "POST") {
+    const id = "CC-" + String(demoReports.length + 1).padStart(3, "0");
+    demoReports.push({ reportId: id, type: body.type, title: body.title, location: body.location, description: body.description,
+      status: "Open", timestamp: stamp(new Date()), reporterId: session.id, reporterName: session.name, reporterEmail: session.email, image: "",
+      audit: [{ at: stamp(new Date()), action: "Created", by: session.name }] });
+    return reply(200, { reportId: id, notified: true });
+  }
+  if (path === "/reports") {
+    const mine = session.role === "admin" ? demoReports : demoReports.filter(r => r.reporterId === session.id);
+    return reply(200, mine.map(r => ({ ...r })));
+  }
+  if (path === "/status") {
+    const r = demoReports.find(x => x.reportId === body.reportId);
+    r.status = body.status; r.audit.push({ at: stamp(new Date()), action: "Status changed to " + body.status, by: "Admin" });
+    return reply(200, { ok: true });
+  }
+  return reply(404, { error: "Not found" });
+}
+
+async function call(path, opts = {}) {   // every API call goes through here so the login token is always attached
+  if (DEMO) return demoCall(path, opts);
+  const headers = { "Content-Type": "application/json" };
+  if (session) headers.Authorization = "Bearer " + session.token;
+  const r = await fetch(API + path, { ...opts, headers });
+  if (r.status === 401 && session && path !== "/login") { logout("Your session expired. Please log in again."); throw new Error("Session expired"); }
+  return r;
+}
+function logout(msg) {
+  session = null; all = [];
+  try { sessionStorage.removeItem("cc-session"); } catch (e) {}
+  $("app").hidden = true; $("home").hidden = false; window.scrollTo(0, 0);
+  if (msg) toast(msg, true);
+}
+function fillReporter() { if (session) { $("reporterName").value = session.name; $("reporterEmail").value = session.email || ""; } }
+
+const COPY = {
+  student: { title: "See something on campus? Say something.",
+             sub: "Broken projector, litter in the corridor, a lost wallet or a good idea. Send one report and the right staff member is emailed straight away.",
+             canReport: true },
+  admin:   { title: "Review and resolve campus reports.",
+             sub: "See what is reported most, where, and how it is trending, so the team can fix the biggest problems first.",
+             canReport: false }
+};
+function enterApp() {
+  const c = COPY[session.role];
+  $("home").hidden = true; $("app").hidden = false;
+  $("roleLabel").textContent = (session.role === "admin" ? "Admin: " : "") + session.name;
+  $("heroTitle").textContent = c.title; $("heroSub").textContent = c.sub;
+  $("openForm").hidden = !c.canReport;
+  $("tabA").hidden = session.role !== "admin";
+  fillReporter(); tab("R"); loadReports(); window.scrollTo(0, 0);
+}
+
+// ---------- login / sign-up dialog ----------
+function paintAuth() {
+  const signup = authMode === "signup", admin = authRole === "admin";
+  $("authTitle").textContent = signup ? "Create student account" : "Log in";
+  $("authBtn").textContent = signup ? "Create account" : "Log in";
+  $("segStudent").setAttribute("aria-pressed", String(!admin));
+  $("segAdmin").setAttribute("aria-pressed", String(admin));
+  $("roleSeg").hidden = signup; $("signupOnly").hidden = !signup;
+  $("suName").required = signup; $("suEmail").required = signup;
+  $("idLabel").textContent = admin ? "Admin username" : "Enrollment number";
+  $("authToggle").hidden = admin;
+  $("authToggle").textContent = signup ? "Already have an account? Log in" : "New student? Create an account";
+  $("authPw").autocomplete = signup ? "new-password" : "current-password";
+}
+function showAuth(signup) {
+  authMode = signup ? "signup" : "login"; if (signup) authRole = "student";
+  paintAuth(); $("authErr").textContent = ""; $("authDlg").showModal();
+}
+$("homeLogin").addEventListener("click", () => showAuth(false));
+$("homeStart").addEventListener("click", () => showAuth(false));
+$("homeSignup").addEventListener("click", () => showAuth(true));
+$("closeAuth").addEventListener("click", () => $("authDlg").close());
+$("segStudent").addEventListener("click", () => { authRole = "student"; paintAuth(); });
+$("segAdmin").addEventListener("click", () => { authRole = "admin"; authMode = "login"; paintAuth(); });
+$("authToggle").addEventListener("click", () => { authMode = authMode === "signup" ? "login" : "signup"; paintAuth(); $("authErr").textContent = ""; });
+$("logout").addEventListener("click", () => logout());
+
+$("authForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const btn = $("authBtn"), err = $("authErr"); err.textContent = ""; btn.disabled = true;
+  try {
+    const id = $("authId").value.trim(), pw = $("authPw").value;
+    if (authMode === "signup") {
+      const reg = await call("/register", { method:"POST", body:JSON.stringify({ id, name:$("suName").value.trim(), email:$("suEmail").value.trim(), password:pw }) });
+      const regOut = await reg.json(); if (!reg.ok) throw new Error(regOut.error || "Could not create the account.");
+    }
+    const res = await call("/login", { method:"POST", body:JSON.stringify({ role:authRole, id, password:pw }) });
+    const out = await res.json(); if (!res.ok) throw new Error(out.error || "Login failed.");
+    saveSession(out); $("authDlg").close(); $("authForm").reset(); enterApp();
+  } catch (x) {
+    console.error("Login/sign-up request failed:", x);
+    err.textContent = x.message === "Failed to fetch" ? "Cannot reach the server. Check your connection and the Function URL." : x.message;
+  } finally { btn.disabled = false; }
+});
+
+// ---------- start ----------
+TYPES.forEach(t => { const s = el("span"); s.style.setProperty("--c", color(t)); s.append(icon(t), " " + t); $("typeList").appendChild(s); });
+buildChips();
+$("demoBar").hidden = !DEMO;
+session = loadSession();
+if (session) enterApp();
+</script>
+</body>
+</html>
