@@ -4,7 +4,7 @@ A small campus issue-reporting portal built on AWS. Students log in and report m
 
 Built for a Cloud Computing Essentials assignment (EC2, Lambda, S3, SNS), then extended with login, roles, an admin dashboard and tamper detection.
 
-> **Live demo:** the page has a built-in demo mode (no AWS needed). Once GitHub Pages is on, it runs at `https://YOUR-USERNAME.github.io/campuscare/`. Admin login in demo mode: `admin` / `admin1234`. Students can use any ID and an 8+ character password. Demo data is not saved.
+> **Live demo:** the page has a built-in demo mode (no AWS needed). Once GitHub Pages is on, it runs at `[priyal-09.github.io/CampusCare/](https://priyal-09.github.io/CampusCare/)`. Admin login in demo mode: `admin` / `admin1234`. Students can use any ID and an 8+ character password. Demo data is not saved.
 
 <!-- ![Homepage](docs/screenshots/homepage.png) -->
 <!-- ![Admin analytics](docs/screenshots/admin-analytics.png) -->
